@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apartment Affordability & Budget Decision Tool</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Chart.js for visualization -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8fafc;
+        }
+        /* Custom sleek range sliders */
+        input[type=range] {
+            -webkit-appearance: none;
+            appearance: none;
+            background: transparent;
+        }
+        input[type=range]:focus {
+            outline: none;
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 9999px;
+            transition: background 0.2s;
+        }
+        input[type=range]::-webkit-slider-thumb {
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            -webkit-appearance: none;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+            transition: transform 0.15s ease, background-color 0.15s ease;
+        }
+        input[type=range]::-webkit-slider-thumb:hover {
+            transform: scale(1.15);
+            background: #4338ca;
+        }
+        input[type=range]::-moz-range-track {
+            width: 100%;
+            height: 6px;
+            cursor: pointer;
+            background: #e2e8f0;
+            border-radius: 9999px;
+        }
+        input[type=range]::-moz-range-thumb {
+            height: 18px;
+            width: 18px;
+            border: none;
+            border-radius: 50%;
+            background: #4f46e5;
+            cursor: pointer;
+            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen pb-16 antialiased">
+
+    <!-- Header -->
+    <header class="bg-white border-b border-slate-200/80 sticky top-0 z-30 backdrop-blur-md bg-white/90">
+        <div class="max-w-7xl mx-auto py-4 px-4 sm:px-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="w-2.5 h-2.5 rounded-full bg-indigo-600"></span>
+                    <h1 class="text-xl font-bold tracking-tight text-slate-900">Apartment Affordability Model</h1>
+                </div>
+                <p class="text-slate-500 text-xs mt-0.5">Evaluate monthly housing options, side-work leverage, and discretionary boundaries</p>
+            </div>
+            <div class="bg-slate-100/80 px-3 py-1.5 rounded-full text-xs text-slate-600 flex items-center gap-2 border border-slate-200">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 9 0 0118 0z" />
+                </svg>
+                Conversion Rule: 52/12 weeks per month
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+
+        <!-- LEFT COLUMN: Inputs & Interactive Levers (5 Cols) -->
+        <section class="lg:col-span-5 space-y-6">
+
+            <!-- Interactive Levers Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-6">
+                <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                    <h2 class="text-base font-semibold text-slate-900 flex items-center gap-2">
+                        Decision Levers
+                    </h2>
+                    <span class="text-[11px] font-semibold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">Interactive</span>
+                </div>
+
+                <!-- Lever 1: Apartment Choice -->
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-500 mb-2.5">1. Selected Apartment Option</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <button id="btn-opt-a" onclick="setApartmentChoice('A')" class="p-3.5 rounded-xl border-2 text-left transition-all font-medium text-sm border-indigo-600 bg-indigo-50/50 text-indigo-950 shadow-sm">
+                            <div class="font-bold flex items-center justify-between">
+                                <span>1-Bedroom</span>
+                                <span class="w-2 h-2 rounded-full bg-indigo-600"></span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1.5 font-medium">$1,445/mo + $75 pkg</div>
+                            <div class="text-[11px] text-slate-400 font-normal mt-1">Standard terms</div>
+                        </button>
+                        <button id="btn-opt-b" onclick="setApartmentChoice('B')" class="p-3.5 rounded-xl border-2 text-left transition-all font-medium text-sm border-slate-200 bg-white text-slate-700 hover:border-slate-300">
+                            <div class="font-bold flex items-center justify-between">
+                                <span>1-Bed + Den</span>
+                            </div>
+                            <div class="text-xs text-slate-500 mt-1.5 font-medium">$1,570/mo + $75 pkg</div>
+                            <div class="text-[11px] text-emerald-600 font-medium mt-1">1mo rent/pkg + 3mo Wi-Fi free</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Lever 2: Side Work Hours -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="lever-side-hours" class="text-xs font-semibold uppercase tracking-wider text-slate-500">2. Side-Work Hours / Week</label>
+                        <span id="val-side-hours" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">5 hrs/wk</span>
+                    </div>
+                    <input type="range" id="lever-side-hours" min="0" max="25" step="1" value="5" class="w-full" oninput="updateCalculations()">
+                    <div class="flex justify-between text-[11px] text-slate-400 font-medium">
+                        <span>0 hrs</span>
+                        <span>12.5 hrs</span>
+                        <span>25 hrs/wk</span>
+                    </div>
+                    <div class="text-xs text-slate-500 pt-1 flex justify-between items-center border-t border-slate-50">
+                        <span>Est. Monthly Side Income:</span>
+                        <span id="val-monthly-side-income" class="font-bold text-slate-800">$0.00</span>
+                    </div>
+                </div>
+
+                <!-- Lever 3: Discretionary Spending -->
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="lever-discretionary" class="text-xs font-semibold uppercase tracking-wider text-slate-500">3. Monthly Discretionary</label>
+                        <span id="val-discretionary" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">$400 / mo</span>
+                    </div>
+                    <input type="range" id="lever-discretionary" min="100" max="1500" step="25" value="400" class="w-full" oninput="updateCalculations()">
+                    <div class="flex justify-between text-[11px] text-slate-400 font-medium">
+                        <span>$100 (Frugal)</span>
+                        <span>$800</span>
+                        <span>$1,500 (Flexible)</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400">Dining out, entertainment, nonessential shopping.</p>
+                </div>
+
+                <!-- Lever 4: Roommate Split -->
+                <div class="pt-3 border-t border-slate-100 space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label for="lever-roommates" class="text-xs font-semibold uppercase tracking-wider text-slate-500">4. Cost Sharing (Roommates)</label>
+                        <span id="val-roommates" class="text-sm font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">1 Person (Solo)</span>
+                    </div>
+                    <input type="range" id="lever-roommates" min="1" max="4" step="1" value="1" class="w-full" oninput="updateCalculations()">
+                    <div class="flex justify-between text-[11px] text-slate-400 font-medium">
+                        <span>1 (Solo)</span>
+                        <span>2 Roommates</span>
+                        <span>3 Roommates</span>
+                        <span>4 Roommates</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Baseline Financial Inputs Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
+                <div class="border-b border-slate-100 pb-3 flex justify-between items-center">
+                    <h2 class="text-base font-semibold text-slate-900">
+                        Baseline Financial Inputs
+                    </h2>
+                    <button onclick="resetDefaults()" class="text-xs font-medium text-slate-400 hover:text-indigo-600 transition-colors">Reset Defaults</button>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3.5 text-xs">
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Monthly Net Salary ($)</label>
+                        <input type="number" id="in-net-salary" value="4200" step="50" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Savings Target ($/mo)</label>
+                        <input type="number" id="in-savings-target" value="500" step="25" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Essential Expenses ($/mo)</label>
+                        <input type="number" id="in-essentials" value="1100" step="25" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Min. Debt Payments ($/mo)</label>
+                        <input type="number" id="in-debt" value="300" step="25" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Est. Utilities ($/mo)</label>
+                        <input type="number" id="in-utilities" value="140" step="10" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Wi-Fi Internet ($/mo)</label>
+                        <input type="number" id="in-wifi" value="80" step="5" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Tenant Insurance ($/mo)</label>
+                        <input type="number" id="in-insurance" value="35" step="5" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Net Side Rate ($/hr)</label>
+                        <input type="number" id="in-side-rate" value="25" step="1" class="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-lg focus:bg-white focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 focus:outline-none transition-all" oninput="updateCalculations()">
+                    </div>
+                </div>
+
+                <!-- One-Time Costs Box -->
+                <div class="mt-4 pt-3 border-t border-slate-100 bg-slate-50/70 p-3.5 rounded-xl border border-slate-200/60">
+                    <span class="text-xs font-semibold text-slate-700 block mb-2">One-Time Move Expenses (Separate from Monthly Cash Flow)</span>
+                    <div class="grid grid-cols-2 gap-3 text-xs">
+                        <div>
+                            <label class="text-[11px] text-slate-500 block mb-1">Security / Key Deposit</label>
+                            <input type="number" id="in-deposit" value="1500" class="w-full p-2 border border-slate-200 rounded-lg bg-white" oninput="updateCalculations()">
+                        </div>
+                        <div>
+                            <label class="text-[11px] text-slate-500 block mb-1">Moving Costs</label>
+                            <input type="number" id="in-moving" value="600" class="w-full p-2 border border-slate-200 rounded-lg bg-white" oninput="updateCalculations()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- RIGHT COLUMN: Dashboard & Analysis (7 Cols) -->
+        <section class="lg:col-span-7 space-y-6">
+
+            <!-- Target Status Banner -->
+            <div id="target-status-card" class="bg-white border-2 border-emerald-500/80 rounded-2xl p-6 shadow-sm transition-all duration-300">
+                <div class="flex items-start justify-between gap-4">
+                    <div>
+                        <div class="flex items-center gap-2">
+                            <span id="target-status-icon" class="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs">✓</span>
+                            <h3 id="target-status-title" class="text-lg font-bold text-slate-900">Savings Target Met</h3>
+                        </div>
+                        <p id="target-status-desc" class="text-xs text-slate-600 mt-1.5 leading-relaxed">
+                            Your selected setup generates enough surplus cash flow to meet or exceed your savings goal.
+                        </p>
+                    </div>
+                    <div class="text-right shrink-0">
+                        <div class="text-[11px] text-slate-400 font-semibold uppercase tracking-wider">Net Monthly Surplus</div>
+                        <div id="val-[net-surplus]" class="text-3xl font-extrabold text-emerald-600 mt-0.5">$0.00</div>
+                        <div class="text-xs text-slate-500 mt-1">Goal: <span id="lbl-target-val" class="font-semibold text-slate-700">$500</span>/mo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side-by-Side Option Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Option A Card -->
+                <div id="card-option-a" class="bg-white rounded-2xl border-2 border-indigo-600 p-5 shadow-sm space-y-4 relative transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[11px] font-bold text-indigo-600 uppercase tracking-wider">Option A</span>
+                            <h4 class="text-base font-bold text-slate-900">1-Bedroom</h4>
+                        </div>
+                        <span id="badge-active-a" class="bg-indigo-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ACTIVE</span>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between text-slate-500">
+                            <span>Base Rent + Parking:</span>
+                            <span class="font-semibold text-slate-800">$1,520 / mo</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Total Fixed Housing:</span>
+                            <span class="font-semibold text-slate-800" id="opt-a-fixed-housing">$1,775 / mo</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600 border-t border-slate-100 pt-2">
+                            <span>Regular-Month Surplus:</span>
+                            <span class="font-bold text-slate-900" id="opt-a-regular-surplus">$0 / mo</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600">
+                            <span>1st-Year Avg. Surplus:</span>
+                            <span class="font-bold text-slate-900" id="opt-a-year1-surplus">$0 / mo</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-400">Target Status:</span>
+                        <span id="opt-a-target-badge" class="font-bold text-emerald-600">Met</span>
+                    </div>
+                </div>
+
+                <!-- Option B Card -->
+                <div id="card-option-b" class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 relative opacity-85 transition-all">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Option B</span>
+                            <h4 class="text-base font-bold text-slate-900">1-Bed + Den</h4>
+                        </div>
+                        <span id="badge-active-b" class="hidden bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">ACTIVE</span>
+                    </div>
+
+                    <div class="space-y-2 text-xs">
+                        <div class="flex justify-between text-slate-500">
+                            <span>Base Rent + Parking:</span>
+                            <span class="font-semibold text-slate-800">$1,645 / mo</span>
+                        </div>
+                        <div class="flex justify-between text-slate-500">
+                            <span>Total Fixed Housing:</span>
+                            <span class="font-semibold text-slate-800" id="opt-b-fixed-housing">$1,900 / mo</span>
+                        </div>
+                        <div class="flex justify-between text-slate-600 border-t border-slate-100 pt-2">
+                            <span>Regular-Month Surplus:</span>
+                            <span class="font-bold text-slate-900" id="opt-b-regular-surplus">$0 / mo</span>
+                        </div>
+                        <div class="flex justify-between text-emerald-800 bg-emerald-50/80 px-2 py-1 rounded-lg">
+                            <span class="font-medium">1st-Year Avg. Surplus:</span>
+                            <span class="font-bold" id="opt-b-year1-surplus">$0 / mo</span>
+                        </div>
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 flex justify-between items-center text-xs">
+                        <span class="text-slate-400">Target Status:</span>
+                        <span id="opt-b-target-badge" class="font-bold text-emerald-600">Met</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization Charts -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-4">
+                <h3 class="text-sm font-bold text-slate-900 tracking-tight">Monthly Cash Flow Breakdown</h3>
+                <div class="h-64 relative">
+                    <canvas id="budgetChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Analytical Summary & Insights -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-6 space-y-3 text-xs text-slate-600">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                    Strategic Observations
+                </h3>
+                <ul class="space-y-2 leading-relaxed">
+                    <li class="flex items-start gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-indigo-500 mt-1.5 shrink-0"></span>
+                        <span><strong>Promotional Impact:</strong> Option B incentives (1 mo rent $1,570 + 1 mo parking $75 + 3 mo Wi-Fi) total <strong text-slate-800 id="txt-promo-total">$1,885</strong>. Averaged over Year 1, this provides a <strong class="text-emerald-600" id="txt-promo-monthly">$157.08/mo</strong> credit, making Year 1 net cost lower than Option A.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 shrink-0"></span>
+                        <span><strong>Year 2 Step-Up:</strong> In Month 13 onwards, Option B costs exactly <strong>$125/month more</strong> than Option A ($1,500/year delta).</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0"></span>
+                        <span><strong>Upfront Capital Required:</strong> Initial deposits (<span id="txt-dep-val">$1,500</span>) plus moving expenses (<span id="txt-mov-val">$600</span>) total <strong class="text-slate-900" id="txt-startup-total">$2,100</strong>.</span>
+                    </li>
+                </ul>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // State variables
+        let selectedApartment = 'A'; // 'A' or 'B'
+        let budgetChart = null;
+
+        window.onload = function() {
+            initChart();
+            updateCalculations();
+        };
+
+        function setApartmentChoice(choice) {
+            selectedApartment = choice;
+            
+            const btnA = document.getElementById('btn-opt-a');
+            const btnB = document.getElementById('btn-opt-b');
+            const cardA = document.getElementById('card-option-a');
+            const cardB = document.getElementById('card-option-b');
+            const badgeA = document.getElementById('badge-active-a');
+            const badgeB = document.getElementById('badge-active-b');
+
+            if (choice === 'A') {
+                btnA.className = "p-3.5 rounded-xl border-2 text-left transition-all font-medium text-sm border-indigo-600 bg-indigo-50/50 text-indigo-950 shadow-sm";
+                btnB.className = "p-3.5 rounded-xl border-2 text-left transition-all font-medium text-sm border-slate-200 bg-white text-slate-700 hover:border-slate-300";
+                
+                cardA.className = "bg-white rounded-2xl border-2 border-indigo-600 p-5 shadow-sm space-y-4 relative transition-all";
+                cardB.className = "bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 relative opacity-85 transition-all";
+                
+                badgeA.classList.remove('hidden');
+                badgeB.classList.add('hidden');
+            } else {
+                btnB.className = "p-3.5 rounded-xl border-2 text-left transition-all font-medium text-sm border-indigo-600 bg-indigo-50/50 text-indigo-950 shadow-sm";
+                btnA.className = "p-3.5 rounded-xl border-2 text-left transition-all font-medium text-sm border-slate-200 bg-white text-slate-700 hover:border-slate-300";
+                
+                cardB.className = "bg-white rounded-2xl border-2 border-indigo-600 p-5 shadow-sm space-y-4 relative transition-all";
+                cardA.className = "bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4 relative opacity-85 transition-all";
+                
+                badgeB.classList.remove('hidden');
+                badgeA.classList.add('hidden');
+            }
+
+            updateCalculations();
+        }
+
+        function resetDefaults() {
+            document.getElementById('in-net-salary').value = 4200;
+            document.getElementById('in-savings-target').value = 500;
+            document.getElementById('in-essentials').value = 1100;
+            document.getElementById('in-debt').value = 300;
+            document.getElementById('in-utilities').value = 140;
+            document.getElementById('in-wifi').value = 80;
+            document.getElementById('in-insurance').value = 35;
+            document.getElementById('in-side-rate').value = 25;
+            document.getElementById('in-deposit').value = 1500;
+            document.getElementById('in-moving').value = 600;
+            
+            document.getElementById('lever-side-hours').value = 5;
+            document.getElementById('lever-discretionary').value = 400;
+            document.getElementById('lever-roommates').value = 1;
+            
+            setApartmentChoice('A');
+        }
+
+        function updateCalculations() {
+            const netSalary = parseFloat(document.getElementById('in-net-salary').value) || 0;
+            const savingsTarget = parseFloat(document.getElementById('in-savings-target').value) || 0;
+            const essentials = parseFloat(document.getElementById('in-essentials').value) || 0;
+            const debt = parseFloat(document.getElementById('in-debt').value) || 0;
+            const utilities = parseFloat(document.getElementById('in-utilities').value) || 0;
+            const wifi = parseFloat(document.getElementById('in-wifi').value) || 0;
+            const insurance = parseFloat(document.getElementById('in-insurance').value) || 0;
+            const sideRate = parseFloat(document.getElementById('in-side-rate').value) || 0;
+            const deposit = parseFloat(document.getElementById('in-deposit').value) || 0;
+            const moving = parseFloat(document.getElementById('in-moving').value) || 0;
+
+            const sideHours = parseFloat(document.getElementById('lever-side-hours').value) || 0;
+            const discretionary = parseFloat(document.getElementById('lever-discretionary').value) || 0;
+            const roommates = parseInt(document.getElementById('lever-roommates').value) || 1;
+
+            document.getElementById('val-side-hours').innerText = sideHours + ' hrs/wk';
+            document.getElementById('val-discretionary').innerText = '$' + discretionary.toLocaleString() + ' / mo';
+            document.getElementById('val-roommates').innerText = roommates === 1 ? '1 Person (Solo)' : roommates + ' Roommates Split';
+
+            const monthlySideIncome = sideHours * (52 / 12) * sideRate;
+            document.getElementById('val-monthly-side-income').innerText = '$' + monthlySideIncome.toFixed(2);
+
+            const totalMonthlyIncome = netSalary + monthlySideIncome;
+
+            // Option A Calculations
+            const optABaseRentTotal = 1445 + 75;
+            const optAFixedHousingTotal = optABaseRentTotal + utilities + wifi + insurance;
+            const optAFixedHousing = optAFixedHousingTotal / roommates;
+            const optANonHousingExpenses = essentials + debt + discretionary;
+            const optARegularSurplus = totalMonthlyIncome - optAFixedHousing - optANonHousingExpenses;
+            const optAYear1Surplus = optARegularSurplus;
+
+            // Option B Calculations
+            const optBBaseRentTotal = 1570 + 75;
+            const optBFixedHousingTotal = optBBaseRentTotal + utilities + wifi + insurance;
+            const optBFixedHousing = optBFixedHousingTotal / roommates;
+            const optBNonHousingExpenses = essentials + debt + discretionary;
+            const optBRegularSurplus = totalMonthlyIncome - optBFixedHousing - optBNonHousingExpenses;
+
+            const optBPromoTotal = 1570 + 75 + (3 * wifi);
+            const optBPromoMonthlyAvg = (optBPromoTotal / 12) / roommates;
+            const optBYear1Surplus = optBRegularSurplus + optBPromoMonthlyAvg;
+
+            // Option A Card UI
+            document.getElementById('opt-a-fixed-housing').innerText = '$' + optAFixedHousing.toFixed(2) + ' / mo';
+            document.getElementById('opt-a-regular-surplus').innerText = '$' + optARegularSurplus.toFixed(2);
+            document.getElementById('opt-a-year1-surplus').innerText = '$' + optAYear1Surplus.toFixed(2);
+            
+            const optATargetMet = optARegularSurplus >= savingsTarget;
+            const badgeA = document.getElementById('opt-a-target-badge');
+            badgeA.innerText = optATargetMet ? 'Met' : 'Unmet';
+            badgeA.className = optATargetMet ? 'font-bold text-emerald-600' : 'font-bold text-rose-600';
+
+            // Option B Card UI
+            document.getElementById('opt-b-fixed-housing').innerText = '$' + optBFixedHousing.toFixed(2) + ' / mo';
+            document.getElementById('opt-b-regular-surplus').innerText = '$' + optBRegularSurplus.toFixed(2);
+            document.getElementById('opt-b-year1-surplus').innerText = '$' + optBYear1Surplus.toFixed(2);
+
+            const optBTargetMet = optBRegularSurplus >= savingsTarget;
+            const badgeB = document.getElementById('opt-b-target-badge');
+            badgeB.innerText = optBTargetMet ? 'Met' : 'Unmet';
+            badgeB.className = optBTargetMet ? 'font-bold text-emerald-600' : 'font-bold text-rose-600';
+
+            // Active Option Analysis
+            const activeSurplus = selectedApartment === 'A' ? optARegularSurplus : optBRegularSurplus;
+            const activeTargetMet = activeSurplus >= savingsTarget;
+
+            // Target Banner
+            const statusCard = document.getElementById('target-status-card');
+            const statusIcon = document.getElementById('target-status-icon');
+            const statusTitle = document.getElementById('target-status-title');
+            const statusDesc = document.getElementById('target-status-desc');
+            const statusVal = document.getElementById('val-[net-surplus]');
+            document.getElementById('lbl-target-val').innerText = '$' + savingsTarget.toLocaleString();
+
+            statusVal.innerText = '$' + activeSurplus.toFixed(2);
+
+            if (activeTargetMet) {
+                statusCard.className = "bg-white border-2 border-emerald-500 rounded-2xl p-6 shadow-sm transition-all duration-300";
+                statusIcon.className = "flex items-center justify-center w-6 h-6 rounded-full bg-emerald-600 text-white font-bold text-xs";
+                statusIcon.innerText = "✓";
+                statusTitle.innerText = "Savings Target Met";
+                statusDesc.innerText = `Your surplus exceeds your $${savingsTarget}/mo target by $${(activeSurplus - savingsTarget).toFixed(2)} in regular months.`;
+                statusVal.className = "text-3xl font-extrabold text-emerald-600 mt-0.5";
+            } else {
+                statusCard.className = "bg-white border-2 border-rose-400 rounded-2xl p-6 shadow-sm transition-all duration-300";
+                statusIcon.className = "flex items-center justify-center w-6 h-6 rounded-full bg-rose-600 text-white font-bold text-xs";
+                statusIcon.innerText = "✕";
+                statusTitle.innerText = "Savings Target Unmet";
+                statusDesc.innerText = `You are short by $${(savingsTarget - activeSurplus).toFixed(2)} per month to reach your $${savingsTarget} target.`;
+                statusVal.className = "text-3xl font-extrabold text-rose-600 mt-0.5";
+            }
+
+            // Summaries
+            document.getElementById('txt-promo-total').innerText = '$' + optBPromoTotal.toLocaleString();
+            document.getElementById('txt-promo-monthly').innerText = '$' + optBPromoMonthlyAvg.toFixed(2) + '/mo';
+            document.getElementById('txt-dep-val').innerText = '$' + deposit.toLocaleString();
+            document.getElementById('txt-mov-val').innerText = '$' + moving.toLocaleString();
+            document.getElementById('txt-startup-total').innerText = '$' + (deposit + moving).toLocaleString();
+
+            updateChart(optAFixedHousing, optBFixedHousing, essentials + debt, discretionary, optARegularSurplus, optBRegularSurplus, optBYear1Surplus);
+        }
+
+        function initChart() {
+            const ctx = document.getElementById('budgetChart').getContext('2d');
+            budgetChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['1-Bed (Option A)', '1-Bed + Den (Reg)', '1-Bed + Den (Yr 1)'],
+                    datasets: [
+                        {
+                            label: 'Housing & Utilities',
+                            data: [0, 0, 0],
+                            backgroundColor: '#6366f1',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Essentials & Debt',
+                            data: [0, 0, 0],
+                            backgroundColor: '#cbd5e1',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Discretionary',
+                            data: [0, 0, 0],
+                            backgroundColor: '#f59e0b',
+                            borderRadius: 4
+                        },
+                        {
+                            label: 'Net Surplus / Savings',
+                            data: [0, 0, 0],
+                            backgroundColor: '#10b981',
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        x: { stacked: true, grid: { display: false } },
+                        y: { stacked: true, beginAtZero: true, grid: { color: '#f1f5f9' } }
+                    },
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11, family: 'Inter' } } }
+                    }
+                }
+            });
+        }
+
+        function updateChart(aHousing, bHousing, essentialDebt, discretionary, aSurplus, bSurplus, bYr1Surplus) {
+            if (!budgetChart) return;
+
+            const roommates = parseInt(document.getElementById('lever-roommates').value) || 1;
+            const bPromoDiscount = ((1570 + 75 + (3 * parseFloat(document.getElementById('in-wifi').value || 0))) / 12) / roommates;
+            const bYr1EffectiveHousing = Math.max(0, bHousing - bPromoDiscount);
+
+            budgetChart.data.datasets[0].data = [aHousing, bHousing, bYr1EffectiveHousing];
+            budgetChart.data.datasets[1].data = [essentialDebt, essentialDebt, essentialDebt];
+            budgetChart.data.datasets[2].data = [discretionary, discretionary, discretionary];
+            budgetChart.data.datasets[3].data = [
+                Math.max(0, aSurplus), 
+                Math.max(0, bSurplus), 
+                Math.max(0, bYr1Surplus)
+            ];
+
+            budgetChart.update();
+        }
+    </script>
+</body>
+</html>
